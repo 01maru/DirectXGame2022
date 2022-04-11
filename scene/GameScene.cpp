@@ -26,6 +26,10 @@ void GameScene::Initialize() {
 	//	3Dモデル生成
 	model_ = Model::Create();
 
+	worldTransform_.scale_ = {5.0f, 5.0f, 5.0f};
+	worldTransform_.rotation_ = {XM_PI / 4.0f, XM_PI / 4.0f, 0.0f};
+	worldTransform_.translation_ = {10.0f, 10.0f, 10.0f};
+
 	worldTransform_.Initialize();
 	viewProjection_.Initialize();
 }
@@ -47,9 +51,22 @@ void GameScene::Update() {
 	//	debugText
 	value_++;
 	//	文字列
-	std::string strDebug = std::string("Value:") + std::to_string(value_);
+	std::string strDebug1 =
+	  std::string("translation:(") + std::to_string(worldTransform_.translation_.x) +
+	  std::to_string(worldTransform_.translation_.y) +
+	  std::to_string(worldTransform_.translation_.z) + std::string(")");
+	std::string strDebug2 =
+	  std::string("rotation:(") + std::to_string(worldTransform_.rotation_.x) +
+	  std::to_string(worldTransform_.rotation_.y) +
+	  std::to_string(worldTransform_.rotation_.z) + std::string(")");
+	std::string strDebug3 =
+	  std::string("scale:(") + std::to_string(worldTransform_.scale_.x) +
+	  std::to_string(worldTransform_.scale_.y) +
+	  std::to_string(worldTransform_.scale_.z) + std::string(")");
 
-	debugText_->Print(strDebug, 50, 50, 1.0f);
+	debugText_->Print(strDebug1, 50, 50, 1.0f);
+	debugText_->Print(strDebug2, 50, 70, 1.0f);
+	debugText_->Print(strDebug3, 50, 90, 1.0f);
 }
 
 void GameScene::Draw() {
@@ -91,7 +108,7 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
-	sprite_->Draw();
+	//sprite_->Draw();
 
 	// デバッグテキストの描画
 	debugText_->DrawAll(commandList);
