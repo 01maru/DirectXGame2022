@@ -20,6 +20,8 @@ void GameScene::Initialize() {
 
 	soundDataHandle_ = audio_->LoadWave("se_sad03.wav");
 	voiceHandle_ = audio_->PlayWave(soundDataHandle_, true);
+	//	音量調節
+	audio_->SetVolume(voiceHandle_, 0.01f);
 
 	textureHandle_ = TextureManager::Load("mario.jpg");
 	sprite_ = Sprite::Create(textureHandle_, {100, 50});
