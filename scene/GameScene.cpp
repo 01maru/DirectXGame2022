@@ -32,18 +32,17 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 	//	debugText
 	//	文字列
-	std::string strDebug1 =
-	  std::string("translation:(") + std::to_string(worldTransform_.translation_.x) +
-	  std::to_string(worldTransform_.translation_.y) +
-	  std::to_string(worldTransform_.translation_.z) + std::string(")");
-	std::string strDebug2 =
-	  std::string("rotation:(") + std::to_string(worldTransform_.rotation_.x) +
-	  std::to_string(worldTransform_.rotation_.y) +
-	  std::to_string(worldTransform_.rotation_.z) + std::string(")");
-	std::string strDebug3 =
-	  std::string("scale:(") + std::to_string(worldTransform_.scale_.x) +
-	  std::to_string(worldTransform_.scale_.y) +
-	  std::to_string(worldTransform_.scale_.z) + std::string(")");
+	std::string strDebug1 = std::string("translation:(") +
+	                        std::to_string(worldTransform_.translation_.x) +
+	                        std::to_string(worldTransform_.translation_.y) +
+	                        std::to_string(worldTransform_.translation_.z) + std::string(")");
+	std::string strDebug2 = std::string("rotation:(") +
+	                        std::to_string(worldTransform_.rotation_.x) +
+	                        std::to_string(worldTransform_.rotation_.y) +
+	                        std::to_string(worldTransform_.rotation_.z) + std::string(")");
+	std::string strDebug3 = std::string("scale:(") + std::to_string(worldTransform_.scale_.x) +
+	                        std::to_string(worldTransform_.scale_.y) +
+	                        std::to_string(worldTransform_.scale_.z) + std::string(")");
 
 	debugText_->Print(strDebug1, 50, 50, 1.0f);
 	debugText_->Print(strDebug2, 50, 70, 1.0f);
