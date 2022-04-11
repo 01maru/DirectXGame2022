@@ -7,7 +7,6 @@ using namespace DirectX;
 GameScene::GameScene() {}
 
 GameScene::~GameScene() { 
-	delete sprite_;
 	delete model_;
 }
 
@@ -18,11 +17,7 @@ void GameScene::Initialize() {
 	audio_ = Audio::GetInstance();
 	debugText_ = DebugText::GetInstance();
 
-	soundDataHandle_ = audio_->LoadWave("se_sad03.wav");
-	voiceHandle_ = audio_->PlayWave(soundDataHandle_, true);
-
 	textureHandle_ = TextureManager::Load("mario.jpg");
-	sprite_ = Sprite::Create(textureHandle_, {100, 50});
 	//	3Dモデル生成
 	model_ = Model::Create();
 
@@ -34,22 +29,8 @@ void GameScene::Initialize() {
 	viewProjection_.Initialize();
 }
 
-void GameScene::Update() { 
-	XMFLOAT2 position = sprite_->GetPosition();
-	//	座標移動
-	position.x += 2.0f;
-	position.y += 1.0f;
-	//	移動した座標をスプライトに反映
-	sprite_->SetPosition(position);
-
-	//	sound
-	if (input_->TriggerKey(DIK_SPACE)) {
-		audio_->StopWave(voiceHandle_);
-	}
-
-	
+void GameScene::Update() {
 	//	debugText
-	value_++;
 	//	文字列
 	std::string strDebug1 =
 	  std::string("translation:(") + std::to_string(worldTransform_.translation_.x) +
@@ -108,7 +89,6 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
-	//sprite_->Draw();
 
 	// デバッグテキストの描画
 	debugText_->DrawAll(commandList);
