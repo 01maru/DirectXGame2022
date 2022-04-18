@@ -21,33 +21,23 @@ void GameScene::Initialize() {
 	//	3Dモデル生成
 	model_ = Model::Create();
 
-	worldTransform_.scale_ = {5.0f, 5.0f, 5.0f};
-	worldTransform_.rotation_ = {XM_PI / 4.0f, XM_PI / 4.0f, 0.0f};
-	worldTransform_.translation_ = {10.0f, 10.0f, 10.0f};
+	for (size_t i = 0; i < _countof(worldTransform_); i++) {
+		worldTransform_[i].scale_ = {5.0f, 5.0f, 5.0f};
+		worldTransform_[i].rotation_ = {0.0f, 0.0f, 0.0f};
+		if (i < _countof(worldTransform_) / 2) {
+			worldTransform_[i].translation_ = {i * 10.0f - 50.0f, 20.0f, 0.0f};
+		} else {
+			worldTransform_[i].translation_ = {
+			  (i - _countof(worldTransform_) / 2) * 10.0f - 50.0f, -20.0f, 0.0f};
+		}
 
-	worldTransform_.Initialize();
+		worldTransform_[i].Initialize();
+	}
+
 	viewProjection_.Initialize();
 }
 
 void GameScene::Update() {
-	//	debugText
-	//	文字列
-	std::string strDebug1 = std::string("translation:(") +
-	                        std::to_string(worldTransform_.translation_.x) + std::string(",") +
-	                        std::to_string(worldTransform_.translation_.y) + std::string(",") +
-	                        std::to_string(worldTransform_.translation_.z) + std::string(")");
-	std::string strDebug2 = std::string("rotation:(") +
-	                        std::to_string(worldTransform_.rotation_.x) + std::string(",") +
-	                        std::to_string(worldTransform_.rotation_.y) + std::string(",") +
-	                        std::to_string(worldTransform_.rotation_.z) + std::string(")");
-	std::string strDebug3 = std::string("scale:(") + 
-							std::to_string(worldTransform_.scale_.x) + std::string(",") +
-	                        std::to_string(worldTransform_.scale_.y) + std::string(",") +
-	                        std::to_string(worldTransform_.scale_.z) + std::string(")");
-
-	debugText_->Print(strDebug1, 50, 50, 1.0f);
-	debugText_->Print(strDebug2, 50, 70, 1.0f);
-	debugText_->Print(strDebug3, 50, 90, 1.0f);
 }
 
 void GameScene::Draw() {
@@ -76,7 +66,10 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
+	
+	for (size_t i = 0; i < _countof(worldTransform_); i++) {
+		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
