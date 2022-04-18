@@ -4,18 +4,6 @@
 
 using namespace DirectX;
 
-static int map[9][9] = {
-  {1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 1, 0, 1, 0, 1, 0, 1},
-  {1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 1, 0, 1, 0, 1, 0, 1},
-  {1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 1, 0, 1, 0, 1, 0, 1},
-  {1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 1, 0, 1, 0, 1, 0, 1},
-  {1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
-
 GameScene::GameScene() {}
 
 GameScene::~GameScene() { 
@@ -35,16 +23,15 @@ void GameScene::Initialize() {
 
 	for (size_t i = 0; i < _countof(worldTransform_); i++) {
 		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
-			if (map[i][j] == 1) {
-				worldTransform_[i][j].scale_ = {5.0f, 5.0f, 5.0f};
-			} else {
-				worldTransform_[i][j].scale_ = {0.0f, 0.0f, 0.0f};
+			for (size_t z = 0; z < _countof(worldTransform_[0][0]); z++) {
+				worldTransform_[i][j][z].scale_ = {5.0f, 5.0f, 5.0f};
+
+				worldTransform_[i][j][z].rotation_ = {0.0f, 0.0f, 0.0f};
+				worldTransform_[i][j][z].translation_ = {
+				  j * 20.0f - 70.0f, 70.0f - i * 20.0f, 200.0f + z * 20};
+
+				worldTransform_[i][j][z].Initialize();
 			}
-
-			worldTransform_[i][j].rotation_ = {0.0f, 0.0f, 0.0f};
-			worldTransform_[i][j].translation_ = {j * 20.0f - 70.0f, 70.0f - i * 20.0f, 200.0f};
-
-			worldTransform_[i][j].Initialize();
 		}
 	}
 
@@ -83,7 +70,9 @@ void GameScene::Draw() {
 	
 	for (size_t i = 0; i < _countof(worldTransform_); i++) {
 		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
-			model_->Draw(worldTransform_[i][j], viewProjection_, textureHandle_);
+			for (size_t z = 0; z < _countof(worldTransform_[0][0]); z++) {
+				model_->Draw(worldTransform_[i][j][z], viewProjection_, textureHandle_);
+			}
 		}
 	}
 
