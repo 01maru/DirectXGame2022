@@ -42,7 +42,7 @@ void GameScene::Initialize() {
 			}
 
 			worldTransform_[i][j].rotation_ = {0.0f, 0.0f, 0.0f};
-			worldTransform_[i][j].translation_ = {j * 20.0f - 70.0f, i * 20.0f - 70.0f, 200.0f};
+			worldTransform_[i][j].translation_ = {j * 20.0f - 70.0f, 70.0f - i * 20.0f, 200.0f};
 
 			worldTransform_[i][j].Initialize();
 		}
