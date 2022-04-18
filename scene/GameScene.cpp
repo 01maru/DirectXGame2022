@@ -26,76 +26,50 @@ void GameScene::Initialize() {
 	std::random_device seed_gen;			//	乱数シード生成器
 	std::mt19937_64 engine(seed_gen());		//	メルセンヌ・ついスタ(疑似乱数列生成器)
 	//	乱数範囲
-	std::uniform_real_distribution<float> rotDist(0.0f, XM_2PI);	//	回転角用
 	std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);	//	座標用
 
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
+	worldTransform_.rotation_ = {0, 0, 0};
+	worldTransform_.translation_ = {0, 0, 0};
+	worldTransform_.Initialize();
 
-	for (size_t i = 0; i < _countof(worldTransform_); i++) {
-		worldTransform_[i].scale_ = {1.0f, 1.0f, 1.0f};
-		worldTransform_[i].rotation_ = {rotDist(engine), rotDist(engine), rotDist(engine)};
-		worldTransform_[i].translation_ = {posDist(engine), posDist(engine), posDist(engine)};
-		worldTransform_[i].Initialize();
+	for (size_t i = 0; i < _countof(viewProjection_); i++) {
+		viewProjection_[i].target = {0, 0, 0};                               //	注視点
+		viewProjection_[i].up = {cosf(XM_PI / 4.0f), sinf(XM_PI / 4.0f), 0.0f}; //	上方向ベクトル
+		viewProjection_[i].eye = {posDist(engine), posDist(engine), posDist(engine)};
+		viewProjection_[i].Initialize();
 	}
-
-	viewProjection_.target = {10, 0, 0};									//	注視点
-	viewProjection_.up = {cosf(XM_PI / 4.0f), sinf(XM_PI / 4.0f), 0.0f};	//	上方向ベクトル
-	viewProjection_.Initialize();
 }
 
 void GameScene::Update() {
-	//	視点移動
-	//	移動ベクトル
-	XMFLOAT3 move{0, 0, 0};
-	//	速さ
-	const float kEyeSpeed = 0.2f;
-
-	if (input_->PushKey(DIK_W)) {
-		move = {0, 0, kEyeSpeed};
-	} else if (input_->PushKey(DIK_S)) {
-		move = {0, 0, -kEyeSpeed};
+	if (input_->TriggerKey(DIK_SPACE)) {
+		cameraNum++;
+		if (cameraNum >= _countof(viewProjection_)) {
+			cameraNum = 0;
+		}
+		
+		viewProjection_[cameraNum].UpdateMatrix();
 	}
 
-	viewProjection_.eye.x += move.x;
-	viewProjection_.eye.y += move.y;
-	viewProjection_.eye.z += move.z;
+	////	debugText
+	////	文字列
+	for (size_t i = 0; i < _countof(viewProjection_); i++) {
 
-	const float kTargetSpeed = 0.2f;
-
-	if (input_->PushKey(DIK_LEFT)) {
-		move = {-kTargetSpeed, 0, 0};
-	} else if (input_->PushKey(DIK_RIGHT)) {
-		move = {kTargetSpeed, 0, 0};
+		debugText_->SetPos(50, 30 + i * 100);
+		debugText_->Printf("Camera%d", i + 1);
+		debugText_->SetPos(50, 50 + i * 100);
+		debugText_->Printf(
+		  "eye:(%f,%f,%f)", viewProjection_[i].eye.x, viewProjection_[i].eye.y,
+		  viewProjection_[i].eye.z);
+		debugText_->SetPos(50, 70 + i * 100);
+		debugText_->Printf(
+		  "target:(%f,%f,%f)", viewProjection_[i].target.x, viewProjection_[i].target.y,
+		  viewProjection_[i].target.z);
+		debugText_->SetPos(50, 90 + i * 100);
+		debugText_->Printf(
+		  "up:(%f,%f,%f)", viewProjection_[i].up.x, viewProjection_[i].up.y,
+		  viewProjection_[i].up.z);
 	}
-
-	viewProjection_.eye.x += move.x;
-	viewProjection_.eye.y += move.y;
-	viewProjection_.eye.z += move.z;
-
-	const float kUpRotSpeed = 0.05f;
-
-	if (input_->PushKey(DIK_SPACE)) {
-		vieewAngle += kUpRotSpeed;
-
-		vieewAngle = fmodf(vieewAngle, XM_2PI);	//	2πを越えたら0へ
-	}
-
-	viewProjection_.up = {cosf(vieewAngle), sinf(vieewAngle), 0.0f};
-	
-	viewProjection_.UpdateMatrix();
-
-	//	debugText
-	//	文字列
-	debugText_->SetPos(50, 50);
-	debugText_->Printf(
-	  "eye:(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
-	debugText_->SetPos(50, 70);
-	debugText_->Printf(
-	  "eye:(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y,
-	  viewProjection_.target.z);
-	debugText_->SetPos(50, 90);
-	debugText_->Printf(
-	  "up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y,
-	  viewProjection_.up.z);
 }
 
 void GameScene::Draw() {
@@ -124,9 +98,8 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	for (size_t i = 0; i < _countof(worldTransform_); i++) {
-		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
-	}
+	
+	model_->Draw(worldTransform_, viewProjection_[cameraNum], textureHandle_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
