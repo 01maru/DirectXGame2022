@@ -26,50 +26,47 @@ void GameScene::Initialize() {
 	std::random_device seed_gen;			//	乱数シード生成器
 	std::mt19937_64 engine(seed_gen());		//	メルセンヌ・ついスタ(疑似乱数列生成器)
 	//	乱数範囲
+	std::uniform_real_distribution<float> rotDist(0.0f, XM_2PI);	//	回転角用
 	std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);	//	座標用
 
-	worldTransform_.scale_ = {5.0f, 5.0f, 5.0f};
-	worldTransform_.rotation_ = {0, 0, 0};
-	worldTransform_.translation_ = {0, 0, 0};
-	worldTransform_.Initialize();
+	worldTransform_[0].translation_ = {0, 10.0f, 0};
+	worldTransform_[1].translation_ = {-10.0f, -5.0f, 0};
+	worldTransform_[2].translation_ = {10.0f, -5.0f, 0};
 
-	viewProjection_.target = {0, 0, 0};                               //	注視点
+	for (size_t i = 0; i < _countof(worldTransform_); i++) {
+		worldTransform_[i].scale_ = {3.0f, 3.0f, 3.0f};
+		worldTransform_[i].rotation_ = {0, 0, 0};
+		worldTransform_[i].Initialize();
+	}
+	
+	viewProjection_.target = {0, 0, 0};								//	注視点
 	viewProjection_.Initialize();
 }
 
 void GameScene::Update() {
-	const float RotaSpd = 0.05f;
-
-	viewAngle += RotaSpd;
-	viewAngle = fmodf(viewAngle, XM_2PI);
-
-	XMFLOAT3 VecLen(
-	  viewProjection_.eye.x - viewProjection_.target.x,
-	  viewProjection_.eye.y - viewProjection_.target.y,
-	  viewProjection_.eye.z - viewProjection_.target.z);
-	float len = sqrt(VecLen.x * VecLen.x + VecLen.y * VecLen.y + VecLen.z * VecLen.z);
-	XMFLOAT3 move = {cosf(viewAngle), 0.0f, sinf(viewAngle)};
-
-	viewProjection_.eye.x = viewProjection_.target.x + move.x * len;
-	viewProjection_.eye.y = viewProjection_.target.y + move.y * len;
-	viewProjection_.eye.z = viewProjection_.target.z + move.z * len;
 	
+	if (input_->TriggerKey(DIK_SPACE)) {
+		worldTargetNum++;
+		if (worldTargetNum >= _countof(worldTransform_)) {
+			worldTargetNum = 0;
+		}
+		viewProjection_.target = worldTransform_[worldTargetNum].translation_;
+	}
+
 	viewProjection_.UpdateMatrix();
 
 	//	debugText
 	//	文字列
 	debugText_->SetPos(50, 50);
 	debugText_->Printf(
-	  "eye:(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y,
-	  viewProjection_.eye.z);
+	  "eye:(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
 	debugText_->SetPos(50, 70);
 	debugText_->Printf(
 	  "target:(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y,
 	  viewProjection_.target.z);
 	debugText_->SetPos(50, 90);
 	debugText_->Printf(
-	  "up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y,
-	  viewProjection_.up.z);
+	  "up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y, viewProjection_.up.z);
 }
 
 void GameScene::Draw() {
@@ -98,8 +95,10 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	
-	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
+
+	for (size_t i = 0; i < _countof(worldTransform_); i++) {
+		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
