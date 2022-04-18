@@ -56,10 +56,9 @@ class GameScene {
 	//	ワールドトランスフォーム
 	WorldTransform worldTransform_;
 	//	ビュープロジェクション
-	ViewProjection viewProjection_[3];
-	int cameraNum = 0;
+	ViewProjection viewProjection_;
 
-	float vieewAngle = 0.0f;
+	float viewAngle = 0.0f;
 
 
 	/// <summary>
