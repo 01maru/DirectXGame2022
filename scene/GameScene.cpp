@@ -22,23 +22,23 @@ void GameScene::Initialize() {
 	model_ = Model::Create();
 
 	for (size_t i = 0; i < _countof(worldTransform_); i++) {
-		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
-			for (size_t z = 0; z < _countof(worldTransform_[0][0]); z++) {
-				worldTransform_[i][j][z].scale_ = {5.0f, 5.0f, 5.0f};
+		worldTransform_[i].scale_ = {5.0f, 5.0f, 5.0f};
 
-				worldTransform_[i][j][z].rotation_ = {0.0f, 0.0f, 0.0f};
-				worldTransform_[i][j][z].translation_ = {
-				  j * 20.0f - 70.0f, 70.0f - i * 20.0f, 200.0f + z * 20};
+		worldTransform_[i].rotation_ = {0.0f, 0.0f, 0.0f};
+		worldTransform_[i].translation_ = {20.0f, 70.0f - i * 20.0f, 200.0f};
 
-				worldTransform_[i][j][z].Initialize();
-			}
-		}
+		worldTransform_[i].Initialize();
 	}
 
+	viewProjection_.target = {0.0f, 0.0f, 0.0f};
 	viewProjection_.Initialize();
 }
 
-void GameScene::Update() {
+void GameScene::Update() { 
+	for (size_t i = 0; i < _countof(worldTransform_); i++) {
+	
+	}
+	worldTransform_->UpdateMatrix();
 }
 
 void GameScene::Draw() {
@@ -69,11 +69,7 @@ void GameScene::Draw() {
 	/// </summary>
 	
 	for (size_t i = 0; i < _countof(worldTransform_); i++) {
-		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
-			for (size_t z = 0; z < _countof(worldTransform_[0][0]); z++) {
-				model_->Draw(worldTransform_[i][j][z], viewProjection_, textureHandle_);
-			}
-		}
+		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
 	}
 
 	// 3Dオブジェクト描画後処理
