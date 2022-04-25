@@ -22,96 +22,94 @@ void GameScene::Initialize() {
 	//	3Dモデル生成
 	model_ = Model::Create();
 
-	//	乱数
-	std::random_device seed_gen;			//	乱数シード生成器
-	std::mt19937_64 engine(seed_gen());		//	メルセンヌ・ついスタ(疑似乱数列生成器)
-	//	乱数範囲
-	std::uniform_real_distribution<float> rotDist(0.0f, XM_2PI);	//	回転角用
-	std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);	//	座標用
+	player[PlayerId::Root].Initialize();
 
-	worldTransform_[PartId::Root].Initialize();
+	player[PlayerId::Front].translation_ = {0, 0, 2.0f};
+	player[PlayerId::Front].parent_ = &player[PlayerId::Root];
+	player[PlayerId::Front].Initialize();
 
-	worldTransform_[PartId::Spine].translation_ = {0, 4.5f, 0};
-	worldTransform_[PartId::Spine].parent_ = &worldTransform_[PartId::Root];
-	worldTransform_[PartId::Spine].Initialize();
+	player[PlayerId::Bottom].translation_ = {0, -2.0f, 0};
+	player[PlayerId::Bottom].parent_ = &player[PlayerId::Root];
+	player[PlayerId::Bottom].Initialize();
 
-	worldTransform_[PartId::Chest].translation_ = {0, 0, 0};
-	worldTransform_[PartId::Chest].parent_ = &worldTransform_[PartId::Spine];
-	worldTransform_[PartId::Chest].Initialize();
+	player[PlayerId::Left].translation_ = {-2.0f, 0, 0};
+	player[PlayerId::Left].parent_ = &player[PlayerId::Root];
+	player[PlayerId::Left].Initialize();
 
-	worldTransform_[PartId::Head].translation_ = {0, 3.0f, 0};
-	worldTransform_[PartId::Head].parent_ = &worldTransform_[PartId::Chest];
-	worldTransform_[PartId::Head].Initialize();
+	player[PlayerId::Right].translation_ = {2.0f, 0, 0};
+	player[PlayerId::Right].parent_ = &player[PlayerId::Root];
+	player[PlayerId::Right].Initialize();
 
-	worldTransform_[PartId::ArmL].translation_ = {-3.0f, 0, 0};
-	worldTransform_[PartId::ArmL].parent_ = &worldTransform_[PartId::Chest];
-	worldTransform_[PartId::ArmL].Initialize();
-
-	worldTransform_[PartId::ArmR].translation_ = {3.0f, 0, 0};
-	worldTransform_[PartId::ArmR].parent_ = &worldTransform_[PartId::Chest];
-	worldTransform_[PartId::ArmR].Initialize();
-	//	下半身
-	worldTransform_[PartId::Hip].translation_ = {0, -3.0f, 0};
-	worldTransform_[PartId::Hip].parent_ = &worldTransform_[PartId::Spine];
-	worldTransform_[PartId::Hip].Initialize();
-
-	worldTransform_[PartId::LegL].translation_ = {-3.0f, -3.0f, 0};
-	worldTransform_[PartId::LegL].parent_ = &worldTransform_[PartId::Hip];
-	worldTransform_[PartId::LegL].Initialize();
-
-	worldTransform_[PartId::LegR].translation_ = {3.0f, -3.0f, 0};
-	worldTransform_[PartId::LegR].parent_ = &worldTransform_[PartId::Hip];
-	worldTransform_[PartId::LegR].Initialize();
+	player[PlayerId::Top].translation_ = {0, 2.0f, 0};
+	player[PlayerId::Top].parent_ = &player[PlayerId::Root];
+	player[PlayerId::Top].Initialize();
 
 	viewProjection_.Initialize();
 }
 
 void GameScene::Update() {
+	XMFLOAT3 rota{0, 0, 0};
+
+	const float kRotaSpeed = XM_PI / 36.0f;
+
+	if (input_->PushKey(DIK_LEFT)) {
+		rota = {0, -kRotaSpeed, 0};
+	} else if (input_->PushKey(DIK_RIGHT)) {
+		rota = {0, kRotaSpeed, 0};
+	}
+
+	pFrontVec += rota;
+	
 	XMFLOAT3 move{0, 0, 0};
 	//	速さ
 	const float kCharacterSpeed = 0.2f;
 
-	if (input_->PushKey(DIK_LEFT)) {
-		move = {-kCharacterSpeed, 0, 0};
-	} else if (input_->PushKey(DIK_RIGHT)) {
-		move = {kCharacterSpeed, 0, 0};
+	if (input_->PushKey(DIK_UP)) {
+		move.x = kCharacterSpeed * sin(pFrontVec.pos.y);
+		move.z = kCharacterSpeed * cos(pFrontVec.pos.y);
+	} else if (input_->PushKey(DIK_DOWN)) {
+		move.x = -kCharacterSpeed * sin(pFrontVec.pos.y);
+		move.z = -kCharacterSpeed * cos(pFrontVec.pos.y);
+	}
+
+	player[PlayerId::Root].translation_.x += move.x;
+	player[PlayerId::Root].translation_.y += move.y;
+	player[PlayerId::Root].translation_.z += move.z;
+
+
+	player[PlayerId::Root].rotation_.x += rota.x;
+	player[PlayerId::Root].rotation_.y += rota.y;
+	player[PlayerId::Root].rotation_.z += rota.z;
+
+	if (
+	  player[PlayerId::Root].rotation_.x >= XM_2PI ||
+	  player[PlayerId::Root].rotation_.x <= -XM_2PI) {
+		player[PlayerId::Root].rotation_.x = 0.0f;
+	}
+	if (
+	  player[PlayerId::Root].rotation_.y >= XM_2PI ||
+	  player[PlayerId::Root].rotation_.y <= -XM_2PI) {
+		player[PlayerId::Root].rotation_.y = 0.0f;
+	}
+	if (
+	  player[PlayerId::Root].rotation_.z >= XM_2PI ||
+	  player[PlayerId::Root].rotation_.z <= -XM_2PI) {
+		player[PlayerId::Root].rotation_.z = 0.0f;
+	}
+
+
+
+	for (size_t i = 0; i < _countof(player); i++) {
+		player[i].UpdateMatrix();
 	}
 	
-	worldTransform_[PartId::Root].translation_.x += move.x;
-	worldTransform_[PartId::Root].translation_.y += move.y;
-	worldTransform_[PartId::Root].translation_.z += move.z;
-
-	const float kChestRotSpeed = 0.05f;
-
-	if (input_->PushKey(DIK_U)) {
-		worldTransform_[PartId::Chest].rotation_.y -= kChestRotSpeed;
-	} else if (input_->PushKey(DIK_I)) {
-		worldTransform_[PartId::Chest].rotation_.y += kChestRotSpeed;
-	}
-
-	const float kHipRotSpeed = 0.05f;
-
-	if (input_->PushKey(DIK_J)) {
-		worldTransform_[PartId::Hip].rotation_.y -= kHipRotSpeed;
-	} else if (input_->PushKey(DIK_K)) {
-		worldTransform_[PartId::Hip].rotation_.y += kHipRotSpeed;
-	}
-
-	worldTransform_[PartId::Root].UpdateMatrix();
-	worldTransform_[PartId::Spine].UpdateMatrix();
-	worldTransform_[PartId::Chest].UpdateMatrix();
-	worldTransform_[PartId::Head].UpdateMatrix();
-	worldTransform_[PartId::ArmL].UpdateMatrix();
-	worldTransform_[PartId::ArmR].UpdateMatrix();
-	worldTransform_[PartId::Hip].UpdateMatrix();
-	worldTransform_[PartId::LegL].UpdateMatrix();
-	worldTransform_[PartId::LegR].UpdateMatrix();
 
 	//	debugText
 	//	文字列
 	debugText_->SetPos(50, 50);
 	debugText_->Printf(
-	  "eye:(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
+	  "rota:(%f,%f,%f)", player[PlayerId::Root].rotation_.x, player[PlayerId::Root].rotation_.y,
+	  player[PlayerId::Root].rotation_.z);
 	debugText_->SetPos(50, 70);
 	debugText_->Printf(
 	  "eye:(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y,
@@ -160,13 +158,18 @@ void GameScene::Draw() {
 	
 	//model_->Draw(worldTransform_[PartId::Root], viewProjection_, textureHandle_);
 	//model_->Draw(worldTransform_[PartId::Spine], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[PartId::Chest], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[PartId::Head], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[PartId::ArmL], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[PartId::ArmR], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[PartId::Hip], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[PartId::LegL], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[PartId::LegR], viewProjection_, textureHandle_);
+	//model_->Draw(worldTransform_[PartId::Chest], viewProjection_, textureHandle_);
+	//model_->Draw(worldTransform_[PartId::Head], viewProjection_, textureHandle_);
+	//model_->Draw(worldTransform_[PartId::ArmL], viewProjection_, textureHandle_);
+	//model_->Draw(worldTransform_[PartId::ArmR], viewProjection_, textureHandle_);
+	//model_->Draw(worldTransform_[PartId::Hip], viewProjection_, textureHandle_);
+	//model_->Draw(worldTransform_[PartId::LegL], viewProjection_, textureHandle_);
+	//model_->Draw(worldTransform_[PartId::LegR], viewProjection_, textureHandle_);
+
+	for (size_t i = 0; i < _countof(player); i++) {
+		if (i != Root)
+		model_->Draw(player[i], viewProjection_, textureHandle_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();

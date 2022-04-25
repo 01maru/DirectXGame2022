@@ -10,6 +10,7 @@
 #include "ViewProjection.h"
 #include "WorldTransform.h"
 #include <DirectXMath.h>
+#include "Vector3D.h"
 
 /// <summary>
 /// ゲームシーン
@@ -42,16 +43,13 @@ class GameScene {
 	/// </summary>
 	void Draw();
 
-	enum PartId {
+	enum PlayerId {
 		Root,
-		Spine,
-		Chest,
-		Head,
-		ArmL,
-		ArmR,
-		Hip,
-		LegL,
-		LegR,
+		Front,
+		Top,
+		Left,
+		Right,
+		Bottom,
 	};
   private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
@@ -65,7 +63,10 @@ class GameScene {
 	Model* model_ = nullptr;
 	
 	//	ワールドトランスフォーム
-	WorldTransform worldTransform_[100];
+	//WorldTransform worldTransform_[100];
+
+	WorldTransform player[6];
+	Vector3D pFrontVec;
 	//	ビュープロジェクション
 	ViewProjection viewProjection_;
 
