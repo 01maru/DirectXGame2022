@@ -60,3 +60,15 @@ Vector3D& Vector3D::operator/=(float s) {
 	pos.z /= s;
 	return *this;
 }
+
+void Plus(DirectX::XMFLOAT3& pos, Vector3D& v) {
+	pos.x += v.pos.x;
+	pos.y += v.pos.y;
+	pos.z += v.pos.z;
+}
+
+void Plus(DirectX::XMFLOAT3& pos, DirectX::XMFLOAT3& v) {
+	pos.x += v.x;
+	pos.y += v.y;
+	pos.z += v.z;
+}

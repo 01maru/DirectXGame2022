@@ -22,3 +22,6 @@ class Vector3D {
 	Vector3D& operator*=(float s);
 	Vector3D& operator/=(float s);
 };
+
+void Plus(DirectX::XMFLOAT3& pos, Vector3D& v);
+void Plus(DirectX::XMFLOAT3& pos, DirectX::XMFLOAT3& v);

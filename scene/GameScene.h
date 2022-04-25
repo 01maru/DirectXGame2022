@@ -63,13 +63,21 @@ class GameScene {
 	Model* model_ = nullptr;
 	
 	//	ワールドトランスフォーム
-	WorldTransform worldTransform_[10][10];
 
+	//	床
+	WorldTransform floor[10][10];
+
+	//	player
 	WorldTransform player[6];
-	Vector3D pFrontVec;
+	Vector3D pFrontVec;				//	player前方ベクトル
+
 	//	ビュープロジェクション
+	
+	//	カメラ座標
 	ViewProjection viewProjection_;
-	float cDisPlayer = 100.0;	//	プレイヤーの中心+cDisPlayer*回転角
+	float cDisPlayer = 20.0f;		//	カメラとobjの距離
+	float cAngleF = 0.0f;
+	float lerp = 0.0f;
 
 	/// <summary>
 	/// ゲームシーン用

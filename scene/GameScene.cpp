@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include <cassert>
 #include <random>
+#include "Easing.h"
 
 using namespace DirectX;
 
@@ -43,14 +44,19 @@ void GameScene::Initialize() {
 	player[PlayerId::Top].parent_ = &player[PlayerId::Root];
 	player[PlayerId::Top].Initialize();
 
-	for (size_t i = 0; i < _countof(worldTransform_); i++) {
-		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
-			worldTransform_[i][j].translation_ = {2.0f * i, -5.0f, 2.0f * j};
-			worldTransform_[i][j].Initialize();
+	for (size_t i = 0; i < _countof(floor); i++) {
+		for (size_t j = 0; j < _countof(floor[0]); j++) {
+			floor[i][j].translation_ = {2.0f * i, -5.0f, 2.0f * j};
+			floor[i][j].Initialize();
 		}
 	}
 
-	viewProjection_.eye.y = 10.0f;
+	cAngleF = EaseIn(XM_PI / 3.0f, XM_PI / 2.0f, lerp, 1);
+	cDisPlayer = EaseIn(20.0f, 100.0f, lerp, 1);
+	viewProjection_.eye.x = -cDisPlayer * sin(cDisPlayer * cos(cAngleF));
+	viewProjection_.eye.z = -cDisPlayer * cos(cDisPlayer * cos(cAngleF));
+
+	viewProjection_.eye.y = cDisPlayer * sin(cAngleF);
 	viewProjection_.Initialize();
 }
 
@@ -58,13 +64,28 @@ void GameScene::Update() {
 	//	回転
 	XMFLOAT3 rota{0, 0, 0};
 
-	const float kRotaSpeed = XM_PI / 36.0f;
+	const float kRotaSpeed = XM_PI / 64.0f;
 
 	if (input_->PushKey(DIK_LEFT)) {
 		rota = {0, -kRotaSpeed, 0};
 	} else if (input_->PushKey(DIK_RIGHT)) {
 		rota = {0, kRotaSpeed, 0};
 	}
+
+	if (input_->PushKey(DIK_Z)) {
+		lerp += 0.01f;
+	} else if (input_->PushKey(DIK_X)) {
+		lerp -= 0.01f;
+	}
+	
+	if (lerp > 1.0f) {
+		lerp = 1.0f;
+	} else if (lerp < 0.0f) {
+		lerp = 0.0f;
+	}
+
+	cAngleF = EaseIn(XM_PI / 3.0f, 0.0f, lerp, 3);
+	cDisPlayer = EaseIn(20.0f, 100.0f, lerp, 3);
 
 	//	範囲設定
 	if (player[PlayerId::Root].rotation_.x >= XM_2PI) {
@@ -100,23 +121,20 @@ void GameScene::Update() {
 		move.z = -kCharacterSpeed * cos(pFrontVec.pos.y);
 	}
 
-	player[PlayerId::Root].translation_.x += move.x;
-	player[PlayerId::Root].translation_.y += move.y;
-	player[PlayerId::Root].translation_.z += move.z;
+	Plus(player[PlayerId::Root].translation_, move);
 
-	player[PlayerId::Root].rotation_.x += rota.x;
-	player[PlayerId::Root].rotation_.y += rota.y;
-	player[PlayerId::Root].rotation_.z += rota.z;
+	Plus(player[PlayerId::Root].rotation_, rota);
 
 	for (size_t i = 0; i < _countof(player); i++) {
 		player[i].UpdateMatrix();
 	}
 	
 	viewProjection_.target = player[PlayerId::Root].translation_;
+	//viewProjection_.eye.y = cDisPlayer * sin(cAngleF);
 	viewProjection_.eye.x =
-	  player[PlayerId::Root].translation_.x - cDisPlayer * sin(pFrontVec.pos.y);
+	  viewProjection_.target.x - cDisPlayer * sin(pFrontVec.pos.y);
 	viewProjection_.eye.z =
-	  player[PlayerId::Root].translation_.z - cDisPlayer * cos(pFrontVec.pos.y);
+	  viewProjection_.target.z - cDisPlayer * cos(pFrontVec.pos.y);
 	viewProjection_.UpdateMatrix();
 
 	//	debugText
@@ -142,6 +160,10 @@ void GameScene::Update() {
 	debugText_->SetPos(50, 150);
 	debugText_->Printf(
 	  "nearZ:%f", viewProjection_.nearZ);
+	debugText_->SetPos(50, 170);
+	debugText_->Printf("CameraDistance:%f", cDisPlayer);
+	debugText_->SetPos(50, 190);
+	debugText_->Printf("CameraAngle:%f", cAngleF);
 }
 
 void GameScene::Draw() {
@@ -171,9 +193,9 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 
-	for (size_t i = 0; i < _countof(worldTransform_); i++){
-		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
-			model_->Draw(worldTransform_[i][j], viewProjection_, textureHandle_);
+	for (size_t i = 0; i < _countof(floor); i++){
+		for (size_t j = 0; j < _countof(floor[0]); j++) {
+			model_->Draw(floor[i][j], viewProjection_, textureHandle_);
 		}
 	}
 	for (size_t i = 0; i < _countof(player); i++) {
