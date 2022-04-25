@@ -63,14 +63,13 @@ class GameScene {
 	Model* model_ = nullptr;
 	
 	//	ワールドトランスフォーム
-	//WorldTransform worldTransform_[100];
+	WorldTransform worldTransform_[10][10];
 
 	WorldTransform player[6];
 	Vector3D pFrontVec;
 	//	ビュープロジェクション
 	ViewProjection viewProjection_;
-
-	float vieewAngle = 0.0f;
+	float cDisPlayer = 100.0;	//	プレイヤーの中心+cDisPlayer*回転角
 
 	/// <summary>
 	/// ゲームシーン用

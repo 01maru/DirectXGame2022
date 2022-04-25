@@ -17,7 +17,6 @@ void GameScene::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 	debugText_ = DebugText::GetInstance();
-
 	textureHandle_ = TextureManager::Load("mario.jpg");
 	//	3Dモデル生成
 	model_ = Model::Create();
@@ -44,10 +43,19 @@ void GameScene::Initialize() {
 	player[PlayerId::Top].parent_ = &player[PlayerId::Root];
 	player[PlayerId::Top].Initialize();
 
+	for (size_t i = 0; i < _countof(worldTransform_); i++) {
+		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
+			worldTransform_[i][j].translation_ = {2.0f * i, -5.0f, 2.0f * j};
+			worldTransform_[i][j].Initialize();
+		}
+	}
+
+	viewProjection_.eye.y = 10.0f;
 	viewProjection_.Initialize();
 }
 
 void GameScene::Update() {
+	//	回転
 	XMFLOAT3 rota{0, 0, 0};
 
 	const float kRotaSpeed = XM_PI / 36.0f;
@@ -58,10 +66,30 @@ void GameScene::Update() {
 		rota = {0, kRotaSpeed, 0};
 	}
 
+	//	範囲設定
+	if (player[PlayerId::Root].rotation_.x >= XM_2PI) {
+		player[PlayerId::Root].rotation_.x -= XM_2PI;
+	}
+	if (player[PlayerId::Root].rotation_.x <= -XM_2PI) {
+		player[PlayerId::Root].rotation_.x += XM_2PI;
+	}
+	if (player[PlayerId::Root].rotation_.y >= XM_2PI) {
+		player[PlayerId::Root].rotation_.y -= XM_2PI;
+	}
+	if (player[PlayerId::Root].rotation_.y <= -XM_2PI) {
+		player[PlayerId::Root].rotation_.y += XM_2PI;
+	}
+	if (player[PlayerId::Root].rotation_.z >= XM_2PI) {
+		player[PlayerId::Root].rotation_.z -= XM_2PI;
+	}
+	if (player[PlayerId::Root].rotation_.z <= -XM_2PI) {
+		player[PlayerId::Root].rotation_.z += XM_2PI;
+	}
+
 	pFrontVec += rota;
 	
+	//	移動
 	XMFLOAT3 move{0, 0, 0};
-	//	速さ
 	const float kCharacterSpeed = 0.2f;
 
 	if (input_->PushKey(DIK_UP)) {
@@ -76,33 +104,20 @@ void GameScene::Update() {
 	player[PlayerId::Root].translation_.y += move.y;
 	player[PlayerId::Root].translation_.z += move.z;
 
-
 	player[PlayerId::Root].rotation_.x += rota.x;
 	player[PlayerId::Root].rotation_.y += rota.y;
 	player[PlayerId::Root].rotation_.z += rota.z;
-
-	if (
-	  player[PlayerId::Root].rotation_.x >= XM_2PI ||
-	  player[PlayerId::Root].rotation_.x <= -XM_2PI) {
-		player[PlayerId::Root].rotation_.x = 0.0f;
-	}
-	if (
-	  player[PlayerId::Root].rotation_.y >= XM_2PI ||
-	  player[PlayerId::Root].rotation_.y <= -XM_2PI) {
-		player[PlayerId::Root].rotation_.y = 0.0f;
-	}
-	if (
-	  player[PlayerId::Root].rotation_.z >= XM_2PI ||
-	  player[PlayerId::Root].rotation_.z <= -XM_2PI) {
-		player[PlayerId::Root].rotation_.z = 0.0f;
-	}
-
-
 
 	for (size_t i = 0; i < _countof(player); i++) {
 		player[i].UpdateMatrix();
 	}
 	
+	viewProjection_.target = player[PlayerId::Root].translation_;
+	viewProjection_.eye.x =
+	  player[PlayerId::Root].translation_.x - cDisPlayer * sin(pFrontVec.pos.y);
+	viewProjection_.eye.z =
+	  player[PlayerId::Root].translation_.z - cDisPlayer * cos(pFrontVec.pos.y);
+	viewProjection_.UpdateMatrix();
 
 	//	debugText
 	//	文字列
@@ -155,17 +170,12 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	
-	//model_->Draw(worldTransform_[PartId::Root], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::Spine], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::Chest], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::Head], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::ArmL], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::ArmR], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::Hip], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::LegL], viewProjection_, textureHandle_);
-	//model_->Draw(worldTransform_[PartId::LegR], viewProjection_, textureHandle_);
 
+	for (size_t i = 0; i < _countof(worldTransform_); i++){
+		for (size_t j = 0; j < _countof(worldTransform_[0]); j++) {
+			model_->Draw(worldTransform_[i][j], viewProjection_, textureHandle_);
+		}
+	}
 	for (size_t i = 0; i < _countof(player); i++) {
 		if (i != Root)
 		model_->Draw(player[i], viewProjection_, textureHandle_);
