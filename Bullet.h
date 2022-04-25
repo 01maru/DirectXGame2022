@@ -1,6 +1,5 @@
 #pragma once
 #include "WorldTransform.h"
-#include "Input.h"
 #include"Vector3D.h"
 
 class Bullet {

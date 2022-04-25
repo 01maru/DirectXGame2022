@@ -116,6 +116,7 @@
     <ClCompile Include="Easing.cpp" />
     <ClCompile Include="input\Input.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="scene\GameScene.cpp" />
     <ClCompile Include="Vector3D.cpp" />
   </ItemGroup>
@@ -142,6 +143,7 @@
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="input\Input.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="scene\GameScene.h" />
     <ClInclude Include="Vector3D.h" />
   </ItemGroup>

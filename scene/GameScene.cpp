@@ -22,27 +22,6 @@ void GameScene::Initialize() {
 	//	3Dモデル生成
 	model_ = Model::Create();
 
-	player[PlayerId::Root].Initialize();
-
-	player[PlayerId::Front].translation_ = {0, 0, 2.0f};
-	player[PlayerId::Front].parent_ = &player[PlayerId::Root];
-	player[PlayerId::Front].Initialize();
-
-	player[PlayerId::Bottom].translation_ = {0, -2.0f, 0};
-	player[PlayerId::Bottom].parent_ = &player[PlayerId::Root];
-	player[PlayerId::Bottom].Initialize();
-
-	player[PlayerId::Left].translation_ = {-2.0f, 0, 0};
-	player[PlayerId::Left].parent_ = &player[PlayerId::Root];
-	player[PlayerId::Left].Initialize();
-
-	player[PlayerId::Right].translation_ = {2.0f, 0, 0};
-	player[PlayerId::Right].parent_ = &player[PlayerId::Root];
-	player[PlayerId::Right].Initialize();
-
-	player[PlayerId::Top].translation_ = {0, 2.0f, 0};
-	player[PlayerId::Top].parent_ = &player[PlayerId::Root];
-	player[PlayerId::Top].Initialize();
 
 	for (size_t i = 0; i < _countof(floor); i++) {
 		for (size_t j = 0; j < _countof(floor[0]); j++) {
@@ -61,19 +40,16 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
-	//	回転
-	XMFLOAT3 rota{0, 0, 0};
+	player.Update(*input_);
 
 	const float kRotaSpeed = XM_PI / 64.0f;
 
 	if (input_->PushKey(DIK_LEFT)) {
-		rota = {0, -kRotaSpeed, 0};
 		if (cMoveT = 1.0f) {
 			cMoveT = 0.0f;
 		}
 		cameraStart = viewProjection_.eye;
 	} else if (input_->PushKey(DIK_RIGHT)) {
-		rota = {0, kRotaSpeed, 0};
 		if (cMoveT = 1.0f) {		
 			cMoveT = 0.0f;
 		}
@@ -95,61 +71,26 @@ void GameScene::Update() {
 	cAngleF = EaseIn(XM_PI / 3.0f, 0.0f, lerp, 3);
 	cDisPlayer = EaseIn(20.0f, 100.0f, lerp, 3);
 
-	//	範囲設定
-	if (player[PlayerId::Root].rotation_.x >= XM_2PI) {
-		player[PlayerId::Root].rotation_.x -= XM_2PI;
-	}
-	if (player[PlayerId::Root].rotation_.x <= -XM_2PI) {
-		player[PlayerId::Root].rotation_.x += XM_2PI;
-	}
-	if (player[PlayerId::Root].rotation_.y >= XM_2PI) {
-		player[PlayerId::Root].rotation_.y -= XM_2PI;
-	}
-	if (player[PlayerId::Root].rotation_.y <= -XM_2PI) {
-		player[PlayerId::Root].rotation_.y += XM_2PI;
-	}
-	if (player[PlayerId::Root].rotation_.z >= XM_2PI) {
-		player[PlayerId::Root].rotation_.z -= XM_2PI;
-	}
-	if (player[PlayerId::Root].rotation_.z <= -XM_2PI) {
-		player[PlayerId::Root].rotation_.z += XM_2PI;
-	}
-
-	cRota += rota.y;
-
-	pFrontVec.pos.x = sin(cRota);
-	pFrontVec.pos.z = cos(cRota);
 	
 	//	移動
 	XMFLOAT3 move{0, 0, 0};
 	const float kCharacterSpeed = 0.2f;
 
 	if (input_->PushKey(DIK_UP)) {
-		move.x = kCharacterSpeed * sin(cRota);
-		move.z = kCharacterSpeed * cos(cRota);
 		if (cMoveT = 1.0f) {		
 			cMoveT = 0.0f;
 		}
 		cameraStart = viewProjection_.eye;
 	} else if (input_->PushKey(DIK_DOWN)) {
-		move.x = -kCharacterSpeed * sin(cRota);
-		move.z = -kCharacterSpeed * cos(cRota);
 		if (cMoveT = 1.0f) {		
 			cMoveT = 0.0f;
 		}
 		cameraStart = viewProjection_.eye;
 	}
 
-	Plus(player[PlayerId::Root].translation_, move);
-
-	Plus(player[PlayerId::Root].rotation_, rota);
-
-	for (size_t i = 0; i < _countof(player); i++) {
-		player[i].UpdateMatrix();
-	}
 	
 	if (input_->TriggerKey(DIK_SPACE)) {
-		bullet.Active(pFrontVec, player[PlayerId::Root]);
+		bullet.Active(player.frontVec, player.pos[PlayerId::Root]);
 	}
 
 	bullet.Update();
@@ -159,23 +100,23 @@ void GameScene::Update() {
 		cMoveT += 0.05f;
 	}
 	
-	viewProjection_.target = player[PlayerId::Root].translation_;
+	viewProjection_.target = player.pos[PlayerId::Root].translation_;
 	//viewProjection_.eye.y = cDisPlayer * sin(cAngleF);
 	//viewProjection_.eye.x = EaseIn(
 	//  cameraStart.x, viewProjection_.target.x - cDisPlayer * sin(pFrontVec.pos.y), cMoveT, 3);
 
 	//viewProjection_.eye.z = EaseIn(
 	//  cameraStart.z, viewProjection_.target.z - cDisPlayer * cos(pFrontVec.pos.y), cMoveT, 3);
-	viewProjection_.eye.x = viewProjection_.target.x - cDisPlayer * sin(cRota);
-	viewProjection_.eye.z = viewProjection_.target.z - cDisPlayer * cos(cRota);
+	viewProjection_.eye.x = viewProjection_.target.x - cDisPlayer * sin(player.rotaA);
+	viewProjection_.eye.z = viewProjection_.target.z - cDisPlayer * cos(player.rotaA);
 	viewProjection_.UpdateMatrix();
 
 	//	debugText
 	//	文字列
-	debugText_->SetPos(50, 50);
-	debugText_->Printf(
-	  "rota:(%f,%f,%f)", player[PlayerId::Root].rotation_.x, player[PlayerId::Root].rotation_.y,
-	  player[PlayerId::Root].rotation_.z);
+	//debugText_->SetPos(50, 50);
+	//debugText_->Printf(
+	//  "rota:(%f,%f,%f)", player[PlayerId::Root].rotation_.x, player[PlayerId::Root].rotation_.y,
+	//  player[PlayerId::Root].rotation_.z);
 	debugText_->SetPos(50, 70);
 	debugText_->Printf(
 	  "eye:(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y,
@@ -197,8 +138,8 @@ void GameScene::Update() {
 	debugText_->Printf("CameraDistance:%f", cDisPlayer);
 	debugText_->SetPos(50, 190);
 	debugText_->Printf("CameraAngle:%f", cAngleF);
-	debugText_->SetPos(50, 210);
-	debugText_->Printf("frontVec:(%f,%f,%f)", pFrontVec.pos.x, pFrontVec.pos.y, pFrontVec.pos.z);
+	//debugText_->SetPos(50, 210);
+	//debugText_->Printf("frontVec:(%f,%f,%f)", pFrontVec.pos.x, pFrontVec.pos.y, pFrontVec.pos.z);
 }
 
 void GameScene::Draw() {
@@ -233,9 +174,9 @@ void GameScene::Draw() {
 			model_->Draw(floor[i][j], viewProjection_, textureHandle_);
 		}
 	}
-	for (size_t i = 0; i < _countof(player); i++) {
+	for (size_t i = 0; i < _countof(player.pos); i++) {
 		if (i != Root)
-		model_->Draw(player[i], viewProjection_, textureHandle_);
+		model_->Draw(player.pos[i], viewProjection_, textureHandle_);
 	}
 
 	if (bullet.isActive) {

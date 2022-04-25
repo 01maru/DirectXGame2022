@@ -12,6 +12,7 @@
 #include <DirectXMath.h>
 #include "Vector3D.h"
 #include "Bullet.h"
+#include "Player.h"
 
 /// <summary>
 /// ゲームシーン
@@ -69,8 +70,7 @@ class GameScene {
 	WorldTransform floor[10][10];
 
 	//	player
-	WorldTransform player[6];
-	Vector3D pFrontVec;				//	player前方ベクトル
+	Player player;
 
 	//	弾
 	Bullet bullet;
@@ -80,7 +80,6 @@ class GameScene {
 	//	カメラ座標
 	ViewProjection viewProjection_;
 	float cDisPlayer = 20.0f;		//	カメラとobjの距離
-	float cRota = 0.0f;
 	float cAngleF = 0.0f;
 	float lerp = 0.0f;
 	float cMoveT = 1.0f;			//	カメラ移動時間
