@@ -68,8 +68,16 @@ void GameScene::Update() {
 
 	if (input_->PushKey(DIK_LEFT)) {
 		rota = {0, -kRotaSpeed, 0};
+		if (cMoveT = 1.0f) {
+			cMoveT = 0.0f;
+		}
+		cameraStart = viewProjection_.eye;
 	} else if (input_->PushKey(DIK_RIGHT)) {
 		rota = {0, kRotaSpeed, 0};
+		if (cMoveT = 1.0f) {		
+			cMoveT = 0.0f;
+		}
+		cameraStart = viewProjection_.eye;
 	}
 
 	if (input_->PushKey(DIK_Z)) {
@@ -107,18 +115,29 @@ void GameScene::Update() {
 		player[PlayerId::Root].rotation_.z += XM_2PI;
 	}
 
-	pFrontVec += rota;
+	cRota += rota.y;
+
+	pFrontVec.pos.x = sin(cRota);
+	pFrontVec.pos.z = cos(cRota);
 	
 	//	移動
 	XMFLOAT3 move{0, 0, 0};
 	const float kCharacterSpeed = 0.2f;
 
 	if (input_->PushKey(DIK_UP)) {
-		move.x = kCharacterSpeed * sin(pFrontVec.pos.y);
-		move.z = kCharacterSpeed * cos(pFrontVec.pos.y);
+		move.x = kCharacterSpeed * sin(cRota);
+		move.z = kCharacterSpeed * cos(cRota);
+		if (cMoveT = 1.0f) {		
+			cMoveT = 0.0f;
+		}
+		cameraStart = viewProjection_.eye;
 	} else if (input_->PushKey(DIK_DOWN)) {
-		move.x = -kCharacterSpeed * sin(pFrontVec.pos.y);
-		move.z = -kCharacterSpeed * cos(pFrontVec.pos.y);
+		move.x = -kCharacterSpeed * sin(cRota);
+		move.z = -kCharacterSpeed * cos(cRota);
+		if (cMoveT = 1.0f) {		
+			cMoveT = 0.0f;
+		}
+		cameraStart = viewProjection_.eye;
 	}
 
 	Plus(player[PlayerId::Root].translation_, move);
@@ -129,12 +148,26 @@ void GameScene::Update() {
 		player[i].UpdateMatrix();
 	}
 	
+	if (input_->TriggerKey(DIK_SPACE)) {
+		bullet.Active(pFrontVec, player[PlayerId::Root]);
+	}
+
+	bullet.Update();
+
+	//	camera
+	if (cMoveT < 1.0f) {
+		cMoveT += 0.05f;
+	}
+	
 	viewProjection_.target = player[PlayerId::Root].translation_;
 	//viewProjection_.eye.y = cDisPlayer * sin(cAngleF);
-	viewProjection_.eye.x =
-	  viewProjection_.target.x - cDisPlayer * sin(pFrontVec.pos.y);
-	viewProjection_.eye.z =
-	  viewProjection_.target.z - cDisPlayer * cos(pFrontVec.pos.y);
+	//viewProjection_.eye.x = EaseIn(
+	//  cameraStart.x, viewProjection_.target.x - cDisPlayer * sin(pFrontVec.pos.y), cMoveT, 3);
+
+	//viewProjection_.eye.z = EaseIn(
+	//  cameraStart.z, viewProjection_.target.z - cDisPlayer * cos(pFrontVec.pos.y), cMoveT, 3);
+	viewProjection_.eye.x = viewProjection_.target.x - cDisPlayer * sin(cRota);
+	viewProjection_.eye.z = viewProjection_.target.z - cDisPlayer * cos(cRota);
 	viewProjection_.UpdateMatrix();
 
 	//	debugText
@@ -164,6 +197,8 @@ void GameScene::Update() {
 	debugText_->Printf("CameraDistance:%f", cDisPlayer);
 	debugText_->SetPos(50, 190);
 	debugText_->Printf("CameraAngle:%f", cAngleF);
+	debugText_->SetPos(50, 210);
+	debugText_->Printf("frontVec:(%f,%f,%f)", pFrontVec.pos.x, pFrontVec.pos.y, pFrontVec.pos.z);
 }
 
 void GameScene::Draw() {
@@ -201,6 +236,10 @@ void GameScene::Draw() {
 	for (size_t i = 0; i < _countof(player); i++) {
 		if (i != Root)
 		model_->Draw(player[i], viewProjection_, textureHandle_);
+	}
+
+	if (bullet.isActive) {
+		model_->Draw(bullet.pos, viewProjection_, textureHandle_);
 	}
 
 	// 3Dオブジェクト描画後処理
