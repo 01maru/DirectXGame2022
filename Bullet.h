@@ -1,6 +1,7 @@
 #pragma once
 #include "WorldTransform.h"
 #include"Vector3D.h"
+#include "Model.h"
 
 class Bullet {
   public:

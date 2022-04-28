@@ -1,6 +1,6 @@
 #include "Bullet.h"
 
-Bullet::Bullet() : isActive(false), spd(5.0f) {}
+Bullet::Bullet() : isActive(false), spd(5.0f) { pos.Initialize(); }
 
 void Bullet::Active(const Vector3D& frontVec, const WorldTransform& Pos) {
 	isActive = true;
@@ -16,4 +16,3 @@ void Bullet::Update() {
 		pos.UpdateMatrix();
 	}
 }
-

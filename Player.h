@@ -3,6 +3,7 @@
 #include "Input.h"
 #include "Vector3D.h"
 #include <DirectXMath.h>
+#include "Bullet.h"
 
 class Player {
   public:
@@ -17,7 +18,7 @@ class Player {
 	WorldTransform pos[6];
 	float rotaA = 0.0f;
 	Vector3D frontVec;				//	前方ベクトル
-
+	Bullet bullet[50];
   private:
 	void SetRotaRange(float& pos, float limit);
   public:

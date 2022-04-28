@@ -71,11 +71,6 @@ void GameScene::Update() {
 	cAngleF = EaseIn(XM_PI / 3.0f, 0.0f, lerp, 3);
 	cDisPlayer = EaseIn(20.0f, 100.0f, lerp, 3);
 
-	
-	//	移動
-	XMFLOAT3 move{0, 0, 0};
-	const float kCharacterSpeed = 0.2f;
-
 	if (input_->PushKey(DIK_UP)) {
 		if (cMoveT = 1.0f) {		
 			cMoveT = 0.0f;
@@ -88,12 +83,11 @@ void GameScene::Update() {
 		cameraStart = viewProjection_.eye;
 	}
 
-	
-	if (input_->TriggerKey(DIK_SPACE)) {
-		bullet.Active(player.frontVec, player.pos[PlayerId::Root]);
-	}
+	//if (input_->TriggerKey(DIK_SPACE)) {
+	//	bullet.Active(player.frontVec, player.pos[PlayerId::Root]);
+	//}
 
-	bullet.Update();
+	//bullet.Update();
 
 	//	camera
 	if (cMoveT < 1.0f) {
@@ -179,8 +173,10 @@ void GameScene::Draw() {
 		model_->Draw(player.pos[i], viewProjection_, textureHandle_);
 	}
 
-	if (bullet.isActive) {
-		model_->Draw(bullet.pos, viewProjection_, textureHandle_);
+	for (size_t i = 0; i < _countof(player.bullet); i++) {
+		if (player.bullet[i].isActive) {
+		}
+		model_->Draw(player.bullet[i].pos, viewProjection_, textureHandle_);
 	}
 
 	// 3Dオブジェクト描画後処理

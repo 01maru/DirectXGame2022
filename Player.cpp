@@ -84,4 +84,18 @@ void Player::Update(const Input& input) {
 	for (size_t i = 0; i < _countof(pos); i++) {
 		pos[i].UpdateMatrix();
 	}
+
+	//	bullet
+	if (input.TriggerKey(DIK_SPACE)) {
+		for (size_t i = 0; i < _countof(bullet); i++) {
+			if (!bullet[i].isActive) {
+ 				bullet[i].Active(frontVec, pos[PlayerId::Root]);
+				break;
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < _countof(bullet); i++) {
+		bullet[i].Update();
+	}
 }

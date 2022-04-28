@@ -72,9 +72,6 @@ class GameScene {
 	//	player
 	Player player;
 
-	//	弾
-	Bullet bullet;
-
 	//	ビュープロジェクション
 	
 	//	カメラ座標
